@@ -1,14 +1,14 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
-// Firebase configuration - will be created during deployment
+// Firebase configuration for Chocolate Opioid Initiative
 const firebaseConfig = {
-  apiKey: "PLACEHOLDER",
-  authDomain: "PLACEHOLDER.firebaseapp.com",
-  projectId: "PLACEHOLDER",
-  storageBucket: "PLACEHOLDER.appspot.com",
-  messagingSenderId: "PLACEHOLDER",
-  appId: "PLACEHOLDER"
+  apiKey: "AIzaSyA4TkghRZxyJzppDOMVV5nfZ2qdDovrVk0",
+  authDomain: "chocolate-opioid-initiative.firebaseapp.com",
+  projectId: "chocolate-opioid-initiative",
+  storageBucket: "chocolate-opioid-initiative.firebasestorage.app",
+  messagingSenderId: "284201278476",
+  appId: "1:284201278476:web:e84610feb706ef88d5e229"
 };
 
 // Initialize Firebase
