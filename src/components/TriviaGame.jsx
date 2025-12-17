@@ -14,11 +14,24 @@ const TriviaGame = ({ onClose, data }) => {
 
   // Generate trivia questions from data
   const generateQuestions = () => {
-    // Calculate statistics from data
+    // Calculate statistics from data - exclude non-drug indicators
     const drugData = {}
+    const excludeIndicators = [
+      'Number of Deaths',
+      'Number of Drug Overdose Deaths',
+      'Percent with drugs specified',
+      'Percent Pending Investigation'
+    ]
+    
     data.forEach(row => {
       const drug = row.Indicator
       const value = parseFloat(row['Data Value'])
+      
+      // Skip non-drug indicators
+      if (!drug || excludeIndicators.some(excluded => drug.includes(excluded))) {
+        return
+      }
+      
       if (!drugData[drug]) {
         drugData[drug] = { total: 0, count: 0 }
       }
@@ -28,24 +41,31 @@ const TriviaGame = ({ onClose, data }) => {
 
     const drugAverages = Object.entries(drugData)
       .map(([drug, stats]) => ({
-        drug,
+        drug: drug.split('(')[0].trim(), // Clean drug name
         average: stats.total / stats.count
       }))
       .sort((a, b) => b.average - a.average)
 
-    const topDrug = drugAverages[0]?.drug || 'Unknown'
-    const secondDrug = drugAverages[1]?.drug || 'Unknown'
+    const topDrug = drugAverages[0]?.drug || 'Opioids'
+    const secondDrug = drugAverages[1]?.drug || 'Synthetic opioids'
     
-    // Get year with most deaths
+    // Get year with most deaths - only count actual drug deaths
     const yearData = {}
     data.forEach(row => {
       const year = row.Year
+      const drug = row.Indicator
       const value = parseFloat(row['Data Value'])
+      
+      // Skip non-drug indicators
+      if (!drug || excludeIndicators.some(excluded => drug.includes(excluded))) {
+        return
+      }
+      
       yearData[year] = (yearData[year] || 0) + value
     })
     const yearsRanked = Object.entries(yearData)
       .sort((a, b) => b[1] - a[1])
-    const topYear = yearsRanked[0]?.[0] || '2020'
+    const topYear = yearsRanked[0]?.[0] || '2023'
 
     return [
       {

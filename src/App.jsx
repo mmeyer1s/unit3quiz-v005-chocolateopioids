@@ -58,14 +58,34 @@ function App() {
     Papa.parse(overdoseData, {
       header: true,
       complete: (results) => {
-        const cleanedData = results.data.filter(row => 
-          row['Data Value'] && 
-          row['Data Value'].trim() !== '' && 
-          !isNaN(parseFloat(row['Data Value']))
-        )
+        // Filter to only include valid data rows with actual drug indicators
+        const cleanedData = results.data.filter(row => {
+          const dataValue = row['Data Value']
+          const indicator = row['Indicator']
+          
+          // Exclude rows without valid data
+          if (!dataValue || dataValue.trim() === '' || isNaN(parseFloat(dataValue))) {
+            return false
+          }
+          
+          // Exclude non-drug indicators (metadata columns)
+          const excludeIndicators = [
+            'Number of Deaths',
+            'Number of Drug Overdose Deaths',
+            'Percent with drugs specified',
+            'Percent Pending Investigation'
+          ]
+          
+          if (!indicator || excludeIndicators.some(excluded => indicator.includes(excluded))) {
+            return false
+          }
+          
+          return true
+        })
+        
         setData(cleanedData)
         
-        // Extract unique drugs
+        // Extract unique drugs (only actual drug names)
         const uniqueDrugs = [...new Set(cleanedData.map(row => row.Indicator))].filter(Boolean)
         setDrugs(['All', ...uniqueDrugs.sort()])
         
@@ -193,13 +213,21 @@ function App() {
   const prepareDeathsByDrug = () => {
     const drugTotals = {}
     
+    // Only include actual drug indicators
     filteredData.forEach(row => {
       const drug = row.Indicator
       const value = parseFloat(row['Data Value'])
+      
+      // Skip if this is not a valid drug indicator
+      if (!drug || drug.includes('Number of')) {
+        return
+      }
+      
       drugTotals[drug] = (drugTotals[drug] || 0) + value
     })
     
     const sortedDrugs = Object.entries(drugTotals)
+      .filter(([drug]) => drug && !drug.includes('Number of'))
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10) // Top 10 drugs
     
