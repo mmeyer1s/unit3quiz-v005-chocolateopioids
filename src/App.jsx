@@ -9,12 +9,15 @@ import {
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
+  RadialLinearScale,
   Title,
   Tooltip,
   Legend,
   Filler
 } from 'chart.js'
-import { Line, Bar } from 'react-chartjs-2'
+import { Line, Bar, Pie, Doughnut, Radar } from 'react-chartjs-2'
+import TriviaGame from './components/TriviaGame'
 import './App.css'
 import overdoseData from '../overdoseRates.csv?raw'
 
@@ -25,6 +28,8 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
+  RadialLinearScale,
   Title,
   Tooltip,
   Legend,
@@ -41,6 +46,12 @@ function App() {
   const [votes, setVotes] = useState({ support: 0, against: 0 })
   const [hasVoted, setHasVoted] = useState(false)
   const [showShop, setShowShop] = useState(false)
+  const [showTrivia, setShowTrivia] = useState(false)
+  const [selectedYear, setSelectedYear] = useState('All')
+  const [selectedState, setSelectedState] = useState('All')
+  const [years, setYears] = useState([])
+  const [states, setStates] = useState([])
+  const [chartType, setChartType] = useState('line')
 
   // Load CSV data
   useEffect(() => {
@@ -57,6 +68,14 @@ function App() {
         // Extract unique drugs
         const uniqueDrugs = [...new Set(cleanedData.map(row => row.Indicator))].filter(Boolean)
         setDrugs(['All', ...uniqueDrugs.sort()])
+        
+        // Extract unique years
+        const uniqueYears = [...new Set(cleanedData.map(row => row.Year))].filter(Boolean).sort()
+        setYears(['All', ...uniqueYears])
+        
+        // Extract unique states
+        const uniqueStates = [...new Set(cleanedData.map(row => row['State Name']))].filter(Boolean).sort()
+        setStates(['All', ...uniqueStates])
         
         setFilteredData(cleanedData)
         setLoading(false)
@@ -89,14 +108,24 @@ function App() {
     }
   }, [])
 
-  // Filter data by drug
+  // Filter data by drug, year, and state
   useEffect(() => {
-    if (selectedDrug === 'All') {
-      setFilteredData(data)
-    } else {
-      setFilteredData(data.filter(row => row.Indicator === selectedDrug))
+    let filtered = data
+    
+    if (selectedDrug !== 'All') {
+      filtered = filtered.filter(row => row.Indicator === selectedDrug)
     }
-  }, [selectedDrug, data])
+    
+    if (selectedYear !== 'All') {
+      filtered = filtered.filter(row => row.Year === selectedYear)
+    }
+    
+    if (selectedState !== 'All') {
+      filtered = filtered.filter(row => row['State Name'] === selectedState)
+    }
+    
+    setFilteredData(filtered)
+  }, [selectedDrug, selectedYear, selectedState, data])
 
   // Handle voting
   const handleVote = async (voteType) => {
@@ -160,7 +189,42 @@ function App() {
     return months.indexOf(monthName)
   }
 
+  // Prepare data for deaths by drug (pie/doughnut chart)
+  const prepareDeathsByDrug = () => {
+    const drugTotals = {}
+    
+    filteredData.forEach(row => {
+      const drug = row.Indicator
+      const value = parseFloat(row['Data Value'])
+      drugTotals[drug] = (drugTotals[drug] || 0) + value
+    })
+    
+    const sortedDrugs = Object.entries(drugTotals)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10) // Top 10 drugs
+    
+    return {
+      labels: sortedDrugs.map(([drug]) => drug.split('(')[0].trim()),
+      values: sortedDrugs.map(([, total]) => total)
+    }
+  }
+
   const chartData = prepareChartData()
+  const drugComparisonData = prepareDeathsByDrug()
+
+  // Color palette for charts
+  const colorPalette = [
+    'rgba(139, 69, 19, 0.8)',
+    'rgba(184, 134, 11, 0.8)',
+    'rgba(205, 133, 63, 0.8)',
+    'rgba(210, 105, 30, 0.8)',
+    'rgba(244, 164, 96, 0.8)',
+    'rgba(222, 184, 135, 0.8)',
+    'rgba(188, 143, 143, 0.8)',
+    'rgba(160, 82, 45, 0.8)',
+    'rgba(165, 42, 42, 0.8)',
+    'rgba(178, 34, 34, 0.8)'
+  ]
 
   const lineChartData = {
     labels: chartData.labels.slice(-36), // Last 36 months
@@ -191,6 +255,34 @@ function App() {
         backgroundColor: 'rgba(139, 69, 19, 0.7)',
         borderColor: 'rgba(139, 69, 19, 1)',
         borderWidth: 2,
+      },
+    ],
+  }
+
+  // Doughnut chart for deaths by drug
+  const doughnutChartData = {
+    labels: drugComparisonData.labels,
+    datasets: [
+      {
+        label: 'Deaths by Drug',
+        data: drugComparisonData.values,
+        backgroundColor: colorPalette,
+        borderColor: colorPalette.map(c => c.replace('0.8', '1')),
+        borderWidth: 2,
+      },
+    ],
+  }
+
+  // Pie chart alternate view
+  const pieChartData = {
+    labels: drugComparisonData.labels.slice(0, 5), // Top 5
+    datasets: [
+      {
+        label: 'Top 5 Drugs by Deaths',
+        data: drugComparisonData.values.slice(0, 5),
+        backgroundColor: colorPalette.slice(0, 5),
+        borderColor: '#fff',
+        borderWidth: 3,
       },
     ],
   }
@@ -258,6 +350,10 @@ function App() {
         <DisclaimerModal onClose={() => setShowDisclaimer(false)} />
       )}
 
+      {showTrivia && (
+        <TriviaGame onClose={() => setShowTrivia(false)} data={data} />
+      )}
+
       <div className="main-content">
         <div className="header">
           <h1>🍫 The Chocolate Opioid Initiative</h1>
@@ -282,38 +378,147 @@ function App() {
           <div className="loading">Loading data...</div>
         ) : (
           <>
-            {/* Data Visualization Section */}
+            {/* Enhanced Data Visualization Section */}
             <div className="content-section glass-card">
-              <h2 className="section-title">📊 Drug Overdose Data Analysis</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+                <h2 className="section-title" style={{ margin: 0 }}>📊 Drug Overdose Data Analysis</h2>
+                <button
+                  className="glass-button"
+                  onClick={() => setShowTrivia(true)}
+                  style={{ padding: '12px 24px', fontSize: '15px' }}
+                >
+                  <span>🎯 Play Trivia</span>
+                </button>
+              </div>
               
-              <div className="filters">
+              <div className="filters" style={{ marginBottom: '30px' }}>
                 <select
                   className="filter-select"
                   value={selectedDrug}
                   onChange={(e) => setSelectedDrug(e.target.value)}
                 >
-                  {drugs.map(drug => (
+                  <option value="All">All Drugs</option>
+                  {drugs.slice(1).map(drug => (
                     <option key={drug} value={drug}>{drug}</option>
                   ))}
                 </select>
+
+                <select
+                  className="filter-select"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                >
+                  <option value="All">All Years</option>
+                  {years.slice(1).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="filter-select"
+                  value={selectedState}
+                  onChange={(e) => setSelectedState(e.target.value)}
+                >
+                  <option value="All">All States</option>
+                  {states.slice(1).map(state => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="filter-select"
+                  value={chartType}
+                  onChange={(e) => setChartType(e.target.value)}
+                >
+                  <option value="line">Line Chart</option>
+                  <option value="bar">Bar Chart</option>
+                </select>
               </div>
 
-              <div className="chart-container" style={{ height: '400px' }}>
-                <Line data={lineChartData} options={chartOptions} />
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                gap: '25px',
+                marginBottom: '25px'
+              }}>
+                <div className="chart-container" style={{ height: '400px' }}>
+                  {chartType === 'line' ? (
+                    <Line data={lineChartData} options={{...chartOptions, plugins: {...chartOptions.plugins, title: { ...chartOptions.plugins.title, text: 'Overdose Trends Over Time' }}}} />
+                  ) : (
+                    <Bar data={barChartData} options={{...chartOptions, plugins: {...chartOptions.plugins, title: { ...chartOptions.plugins.title, text: 'Monthly Death Comparison' }}}} />
+                  )}
+                </div>
+
+                <div className="chart-container" style={{ height: '400px' }}>
+                  <Doughnut 
+                    data={doughnutChartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { position: 'right', labels: { font: { size: 12 }, padding: 10 } },
+                        title: { display: true, text: 'Deaths by Drug Type (Top 10)', font: { size: 16, weight: 'bold' } }
+                      }
+                    }}
+                  />
+                </div>
               </div>
 
-              <div className="chart-container" style={{ height: '350px', marginTop: '20px' }}>
-                <Bar data={barChartData} options={{
-                  ...chartOptions,
-                  plugins: {
-                    ...chartOptions.plugins,
-                    title: {
-                      display: true,
-                      text: 'Last 12 Months',
-                      font: { size: 16, weight: 'bold' }
-                    }
-                  }
-                }} />
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+                gap: '25px'
+              }}>
+                <div className="chart-container" style={{ height: '350px' }}>
+                  <Pie 
+                    data={pieChartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 15 } },
+                        title: { display: true, text: 'Top 5 Most Deadly Drugs', font: { size: 16, weight: 'bold' } }
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="chart-container" style={{ height: '350px' }}>
+                  <Bar 
+                    data={barChartData}
+                    options={{
+                      ...chartOptions,
+                      indexAxis: 'y',
+                      plugins: {
+                        ...chartOptions.plugins,
+                        title: { display: true, text: 'Recent Months (Horizontal)', font: { size: 16, weight: 'bold' } }
+                      }
+                    }}
+                  />
+                </div>
+
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(139, 69, 19, 0.3), rgba(101, 67, 33, 0.2))',
+                  borderRadius: '15px',
+                  padding: '30px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  border: '2px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                  <h3 style={{ color: 'white', fontSize: '48px', marginBottom: '10px' }}>
+                    {filteredData.length.toLocaleString()}
+                  </h3>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '18px', marginBottom: '5px' }}>
+                    Data Points
+                  </p>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '14px' }}>
+                    {selectedDrug !== 'All' ? selectedDrug : 'All Drugs'}<br/>
+                    {selectedYear !== 'All' ? selectedYear : 'All Years'}
+                  </p>
+                </div>
               </div>
             </div>
 

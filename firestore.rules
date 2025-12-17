@@ -6,6 +6,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if true; // In production, add proper validation
     }
+    
+    // Allow trivia leaderboard access
+    match /triviaLeaderboard/{document=**} {
+      allow read: if true;
+      allow create: if true;
+    }
   }
 }
 
