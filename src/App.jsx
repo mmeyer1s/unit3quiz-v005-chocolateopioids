@@ -18,6 +18,7 @@ import {
 } from 'chart.js'
 import { Line, Bar, Pie, Doughnut, Radar } from 'react-chartjs-2'
 import TriviaGame from './components/TriviaGame'
+import LeaderboardModal from './components/LeaderboardModal'
 import './App.css'
 import overdoseData from '../overdoseRates.csv?raw'
 
@@ -47,6 +48,7 @@ function App() {
   const [hasVoted, setHasVoted] = useState(false)
   const [showShop, setShowShop] = useState(false)
   const [showTrivia, setShowTrivia] = useState(false)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [selectedYear, setSelectedYear] = useState('All')
   const [selectedState, setSelectedState] = useState('All')
   const [years, setYears] = useState([])
@@ -379,7 +381,18 @@ function App() {
       )}
 
       {showTrivia && (
-        <TriviaGame onClose={() => setShowTrivia(false)} data={data} />
+        <TriviaGame 
+          onClose={() => setShowTrivia(false)} 
+          data={data}
+          onShowLeaderboard={() => {
+            setShowTrivia(false)
+            setShowLeaderboard(true)
+          }}
+        />
+      )}
+
+      {showLeaderboard && (
+        <LeaderboardModal onClose={() => setShowLeaderboard(false)} />
       )}
 
       <div className="main-content">
@@ -410,13 +423,22 @@ function App() {
             <div className="content-section glass-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
                 <h2 className="section-title" style={{ margin: 0 }}>📊 Drug Overdose Data Analysis</h2>
-                <button
-                  className="glass-button"
-                  onClick={() => setShowTrivia(true)}
-                  style={{ padding: '12px 24px', fontSize: '15px' }}
-                >
-                  <span>🎯 Play Trivia</span>
-                </button>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button
+                    className="glass-button"
+                    onClick={() => setShowTrivia(true)}
+                    style={{ padding: '12px 24px', fontSize: '15px' }}
+                  >
+                    <span>🎯 Play Trivia</span>
+                  </button>
+                  <button
+                    className="glass-button"
+                    onClick={() => setShowLeaderboard(true)}
+                    style={{ padding: '12px 24px', fontSize: '15px' }}
+                  >
+                    <span>🏆 Leaderboard</span>
+                  </button>
+                </div>
               </div>
               
               <div className="filters" style={{ marginBottom: '30px' }}>

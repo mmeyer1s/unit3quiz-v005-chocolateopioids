@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { db } from '../firebase'
 import { collection, addDoc, query, orderBy, limit, getDocs } from 'firebase/firestore'
 
-const TriviaGame = ({ onClose, data }) => {
+const TriviaGame = ({ onClose, data, onShowLeaderboard }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [score, setScore] = useState(0)
   const [showScore, setShowScore] = useState(false)
@@ -221,8 +221,14 @@ const TriviaGame = ({ onClose, data }) => {
         total: questions.length,
         timestamp: Date.now()
       })
-      await loadLeaderboard()
-      setShowLeaderboard(true)
+      
+      // Show leaderboard after submitting
+      if (onShowLeaderboard) {
+        onShowLeaderboard()
+      } else {
+        await loadLeaderboard()
+        setShowLeaderboard(true)
+      }
     } catch (error) {
       console.error('Error saving score:', error)
       alert('Error saving score. Please try again.')
