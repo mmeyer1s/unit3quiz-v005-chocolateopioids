@@ -5,6 +5,7 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore'
 const LeaderboardModal = ({ onClose }) => {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     loadLeaderboard()
@@ -13,10 +14,11 @@ const LeaderboardModal = ({ onClose }) => {
   const loadLeaderboard = async () => {
     try {
       setLoading(true)
+      setError(null)
+      // Simplified query - only sort by score to avoid needing composite index
       const q = query(
         collection(db, 'triviaLeaderboard'),
         orderBy('score', 'desc'),
-        orderBy('timestamp', 'asc'),
         limit(10)
       )
       const querySnapshot = await getDocs(q)
@@ -24,9 +26,21 @@ const LeaderboardModal = ({ onClose }) => {
       querySnapshot.forEach((doc) => {
         scores.push(doc.data())
       })
+      console.log('Loaded leaderboard scores:', scores)
+      
+      // Sort by timestamp client-side for tie-breaking
+      scores.sort((a, b) => {
+        if (a.score !== b.score) {
+          return b.score - a.score
+        }
+        return a.timestamp - b.timestamp
+      })
+      
       setLeaderboard(scores)
     } catch (error) {
       console.error('Error loading leaderboard:', error)
+      console.error('Error code:', error.code)
+      setError(error.message)
     } finally {
       setLoading(false)
     }
@@ -65,6 +79,25 @@ const LeaderboardModal = ({ onClose }) => {
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255, 255, 255, 0.6)' }}>
             <p>Loading leaderboard...</p>
+          </div>
+        ) : error ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px',
+            background: 'rgba(220, 53, 69, 0.2)',
+            borderRadius: '12px',
+            border: '1px solid rgba(220, 53, 69, 0.4)',
+            marginBottom: '20px'
+          }}>
+            <p style={{ color: '#ff6b6b', marginBottom: '10px', fontWeight: 'bold' }}>Error loading leaderboard</p>
+            <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', marginBottom: '15px' }}>{error}</p>
+            <button 
+              className="glass-button" 
+              onClick={loadLeaderboard}
+              style={{ padding: '10px 20px', fontSize: '14px' }}
+            >
+              <span>Retry</span>
+            </button>
           </div>
         ) : (
           <div style={{ color: 'white', marginBottom: '30px' }}>

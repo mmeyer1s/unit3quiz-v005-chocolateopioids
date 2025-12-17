@@ -167,10 +167,10 @@ const TriviaGame = ({ onClose, data, onShowLeaderboard }) => {
 
   const loadLeaderboard = async () => {
     try {
+      // Simplified query - only sort by score to avoid composite index requirement
       const q = query(
         collection(db, 'triviaLeaderboard'),
         orderBy('score', 'desc'),
-        orderBy('timestamp', 'asc'),
         limit(10)
       )
       const querySnapshot = await getDocs(q)
@@ -178,9 +178,20 @@ const TriviaGame = ({ onClose, data, onShowLeaderboard }) => {
       querySnapshot.forEach((doc) => {
         scores.push(doc.data())
       })
+      console.log('Trivia - Loaded leaderboard scores:', scores)
+      
+      // Sort by timestamp client-side
+      scores.sort((a, b) => {
+        if (a.score !== b.score) {
+          return b.score - a.score
+        }
+        return a.timestamp - b.timestamp
+      })
+      
       setLeaderboard(scores)
     } catch (error) {
       console.error('Error loading leaderboard:', error)
+      console.error('Error details:', error.code, error.message)
     }
   }
 
