@@ -1,0 +1,24 @@
+{
+  "name": "unit3quiz-v005-chocolateopioids",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Satirical drug overdose data visualization with chocolate theme - NOT REAL ADVICE",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["satire", "data-visualization", "react", "firebase"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.1.2",
+    "chart.js": "^4.5.1",
+    "firebase": "^12.7.0",
+    "papaparse": "^5.5.3",
+    "react": "^19.2.3",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "^19.2.3",
+    "vite": "^7.3.0"
+  }
+}
