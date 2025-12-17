@@ -265,6 +265,17 @@ function App() {
           <div className="satire-warning">
             ⚠️ SATIRE - NOT REAL MEDICAL ADVICE - FOR EDUCATIONAL PURPOSES ONLY ⚠️
           </div>
+          <div style={{ marginTop: '20px' }}>
+            <a 
+              href="https://github.com/mmeyer1s/unit3quiz-v005-chocolateopioids" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="glass-button"
+              style={{ display: 'inline-block', textDecoration: 'none' }}
+            >
+              <span>⭐ View on GitHub</span>
+            </a>
+          </div>
         </div>
 
         {loading ? (
@@ -551,6 +562,17 @@ function ShopPage({ onBack }) {
           <p className="subtitle">Premium Drug-Infused Chocolates (NOT REAL)*</p>
           <div className="satire-warning">
             ⚠️ THESE PRODUCTS DO NOT EXIST - THIS IS SATIRE - NOTHING IS FOR SALE ⚠️
+          </div>
+          <div style={{ marginTop: '20px' }}>
+            <a 
+              href="https://github.com/mmeyer1s/unit3quiz-v005-chocolateopioids" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="glass-button"
+              style={{ display: 'inline-block', textDecoration: 'none' }}
+            >
+              <span>⭐ View on GitHub</span>
+            </a>
           </div>
         </div>
 
