@@ -252,11 +252,7 @@ function App() {
 
   return (
     <div className="app">
-      <div className="background-blobs">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
+      <div className="background-blobs"></div>
 
       {showDisclaimer && (
         <DisclaimerModal onClose={() => setShowDisclaimer(false)} />
@@ -360,7 +356,7 @@ function App() {
             {/* Voting Section */}
             <div className="content-section glass-card voting-section">
               <h2 className="section-title">🗳️ Cast Your Vote</h2>
-              <p style={{ color: 'rgba(255, 255, 255, 0.8)', textAlign: 'center', marginBottom: '20px' }}>
+              <p style={{ color: 'rgba(255, 255, 255, 0.8)', textAlign: 'center', marginBottom: '20px', fontSize: '18px' }}>
                 Do you support the Chocolate Opioid Initiative?
               </p>
               
@@ -387,7 +383,7 @@ function App() {
               </div>
 
               {hasVoted && (
-                <p style={{ color: '#90EE90', fontWeight: 'bold', marginTop: '10px' }}>
+                <p style={{ color: '#90EE90', fontWeight: 'bold', marginTop: '15px', fontSize: '18px' }}>
                   ✓ Thank you for voting!
                 </p>
               )}
@@ -404,10 +400,10 @@ function App() {
             </div>
 
             {/* Footer */}
-            <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)', padding: '40px 20px', fontSize: '12px' }}>
+            <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)', padding: '40px 20px', fontSize: '13px', lineHeight: '1.8' }}>
               <p>This is a satirical project for educational purposes only.</p>
               <p>No actual drug-infused chocolate exists or should ever exist.</p>
-              <p>If you or someone you know is struggling with substance abuse, please call SAMHSA's National Helpline: 1-800-662-4357</p>
+              <p><strong>If you or someone you know is struggling with substance abuse, please call SAMHSA's National Helpline: 1-800-662-4357</strong></p>
               <p style={{ marginTop: '20px' }}>
                 <a href="https://github.com/mmeyer1s/unit3quiz-v005-chocolateopioids" 
                    target="_blank" 
@@ -444,7 +440,7 @@ function DisclaimerModal({ onClose }) {
         <p>The data displayed is real CDC data on drug overdoses, which is a serious public health crisis. 
            If you or someone you know needs help with substance abuse:</p>
         <p><strong>SAMHSA National Helpline: 1-800-662-4357 (24/7)</strong></p>
-        <p style={{ fontSize: '12px', marginTop: '20px' }}>
+        <p style={{ fontSize: '13px', marginTop: '20px', opacity: 0.8 }}>
           By clicking "I Understand," you acknowledge this is satire and not to be taken seriously.
         </p>
         <button className="glass-button understand-button" onClick={onClose}>
@@ -455,116 +451,121 @@ function DisclaimerModal({ onClose }) {
   )
 }
 
-// Shop Page Component
+// Shop Page Component with Cart
 function ShopPage({ onBack }) {
+  const [cart, setCart] = useState([])
+  const [isCartOpen, setIsCartOpen] = useState(false)
+
   const products = [
     {
       id: 1,
       name: 'Fentanyl Fudge Bar',
+      emoji: '🍫',
       dose: '0.00001mg fentanyl per square',
-      description: 'Build your tolerance with our gentlest formula. Start here!',
+      description: 'Build your tolerance with our gentlest formula. Perfect for beginners! Start your journey to immunity here.',
       price: 19.99,
-      warning: 'NOT REAL - DO NOT ATTEMPT'
+      warning: 'NOT REAL - DO NOT ATTEMPT - SATIRE'
     },
     {
       id: 2,
       name: 'Cocaine Crunch',
+      emoji: '⚡',
       dose: '0.001mg cocaine per piece',
-      description: 'For the go-getter who wants energy and tolerance!',
+      description: 'For the go-getter who wants energy and tolerance! Productivity meets prevention in every bite.',
       price: 24.99,
-      warning: 'NOT REAL - DO NOT ATTEMPT'
+      warning: 'NOT REAL - DO NOT ATTEMPT - SATIRE'
     },
     {
       id: 3,
       name: 'Heroin Hazelnut Delight',
+      emoji: '🌰',
       dose: '0.0001mg heroin with real hazelnuts',
-      description: 'Nutty flavor meets controlled exposure therapy.',
+      description: 'Nutty flavor meets controlled exposure therapy. European elegance, American innovation!',
       price: 22.99,
-      warning: 'NOT REAL - DO NOT ATTEMPT'
+      warning: 'NOT REAL - DO NOT ATTEMPT - SATIRE'
     },
     {
       id: 4,
       name: 'Methamphetamine Mint',
+      emoji: '🌿',
       dose: '0.0005mg methamphetamine',
-      description: 'Cool mint flavor with a tolerance-building twist!',
+      description: 'Cool mint flavor with a tolerance-building twist! Fresh breath, fresher approach to public health.',
       price: 21.99,
-      warning: 'NOT REAL - DO NOT ATTEMPT'
+      warning: 'NOT REAL - DO NOT ATTEMPT - SATIRE'
     },
     {
       id: 5,
       name: 'The Sampler Pack',
+      emoji: '🎁',
       dose: 'All varieties in micro-doses',
-      description: 'Can\'t decide? Try them all! Build comprehensive tolerance.',
+      description: 'Can\'t decide? Try them all! Build comprehensive tolerance with our variety pack. Best value!',
       price: 89.99,
-      warning: 'NOT REAL - DO NOT ATTEMPT'
+      warning: 'NOT REAL - DO NOT ATTEMPT - SATIRE'
     },
     {
       id: 6,
       name: 'Political Endorsement Box',
+      emoji: '🗳️',
       dose: 'Gift box with campaign materials',
-      description: 'Show your support! Comes with bumper stickers and pamphlets.',
+      description: 'Show your support! Comes with bumper stickers, pamphlets, and a selection of tolerance chocolates.',
       price: 49.99,
       warning: 'NOT REAL - THIS IS SATIRE'
     }
   ]
 
+  const addToCart = (product) => {
+    setCart([...cart, product])
+    setIsCartOpen(true)
+  }
+
+  const removeFromCart = (index) => {
+    const newCart = cart.filter((_, i) => i !== index)
+    setCart(newCart)
+  }
+
+  const getTotal = () => {
+    return cart.reduce((sum, item) => sum + item.price, 0).toFixed(2)
+  }
+
+  const handleCheckout = () => {
+    alert('THIS IS SATIRE!\n\nThese products do not exist and cannot be purchased.\n\nThis button is fake. The entire store is fake.\n\nIf you need help with substance abuse, call:\nSAMHSA: 1-800-662-4357')
+  }
+
   return (
     <div className="app">
-      <div className="background-blobs">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
+      <div className="background-blobs"></div>
 
       <div className="main-content">
+        <div className="shop-nav glass-card">
+          <button className="glass-button" onClick={onBack}>
+            <span>← Back to Data</span>
+          </button>
+          <button className="glass-button cart-button" onClick={() => setIsCartOpen(!isCartOpen)}>
+            <span>🛒 Cart</span>
+            {cart.length > 0 && <span className="cart-badge">{cart.length}</span>}
+          </button>
+        </div>
+
         <div className="header">
           <h1>🍫 Tolerance Chocolate™ Shop</h1>
           <p className="subtitle">Premium Drug-Infused Chocolates (NOT REAL)*</p>
           <div className="satire-warning">
-            ⚠️ THESE PRODUCTS DO NOT EXIST - THIS IS SATIRE ⚠️
+            ⚠️ THESE PRODUCTS DO NOT EXIST - THIS IS SATIRE - NOTHING IS FOR SALE ⚠️
           </div>
-          <button className="glass-button" onClick={onBack} style={{ marginTop: '20px' }}>
-            <span>← Back to Data</span>
-          </button>
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-          gap: '30px',
-          padding: '20px',
-          position: 'relative',
-          zIndex: 1
-        }}>
+        <div className="products-grid">
           {products.map(product => (
-            <div key={product.id} className="glass-card" style={{ padding: '30px', textAlign: 'center' }}>
-              <h3 style={{ color: 'white', fontSize: '24px', marginBottom: '10px' }}>
-                {product.name}
-              </h3>
-              <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', marginBottom: '15px' }}>
-                {product.dose}
-              </p>
-              <p style={{ color: 'rgba(255, 255, 255, 0.9)', marginBottom: '20px', lineHeight: '1.6' }}>
-                {product.description}
-              </p>
-              <p style={{ color: '#f4e4d7', fontSize: '28px', fontWeight: 'bold', marginBottom: '15px' }}>
-                ${product.price}
-              </p>
-              <p style={{ 
-                color: '#ff6b6b', 
-                fontSize: '12px', 
-                fontWeight: 'bold', 
-                marginBottom: '15px',
-                padding: '10px',
-                background: 'rgba(255, 0, 0, 0.2)',
-                borderRadius: '5px'
-              }}>
-                {product.warning}
-              </p>
+            <div key={product.id} className="glass-card product-card">
+              <div className="product-image-placeholder">{product.emoji}</div>
+              <h3>{product.name}</h3>
+              <p className="product-dose">{product.dose}</p>
+              <p className="product-description">{product.description}</p>
+              <p className="product-price">${product.price}</p>
+              <p className="product-warning">{product.warning}</p>
               <button 
-                className="glass-button" 
-                style={{ width: '100%' }}
-                onClick={() => alert('THIS IS SATIRE! These products do not exist and should never exist. This button does nothing.')}
+                className="glass-button add-to-cart-button"
+                onClick={() => addToCart(product)}
               >
                 <span>Add to Cart (FAKE)</span>
               </button>
@@ -576,23 +577,63 @@ function ShopPage({ onBack }) {
           textAlign: 'center', 
           padding: '40px 20px',
           maxWidth: '800px',
-          margin: '0 auto'
+          margin: '40px auto'
         }} className="glass-card">
-          <h3 style={{ color: 'white', marginBottom: '20px' }}>Legal Disclaimer</h3>
-          <p style={{ color: 'rgba(255, 255, 255, 0.8)', lineHeight: '1.6' }}>
+          <h3 style={{ color: 'white', marginBottom: '20px', fontSize: '28px' }}>Legal Disclaimer</h3>
+          <p style={{ color: 'rgba(255, 255, 255, 0.85)', lineHeight: '1.8', fontSize: '16px' }}>
             None of these products exist. None of these products should ever exist. 
             Combining drugs with food products is illegal, dangerous, and stupid. 
             This entire page is satire created for an educational web development project. 
-            The "Add to Cart" buttons do nothing because there is nothing to sell.
+            The "Add to Cart" buttons are fake - there is nothing to sell and no way to buy anything.
           </p>
-          <p style={{ color: 'rgba(255, 255, 255, 0.6)', marginTop: '20px', fontSize: '14px' }}>
-            If you're struggling with substance abuse, please get help: <strong>1-800-662-4357</strong>
+          <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginTop: '20px', fontSize: '15px' }}>
+            If you're struggling with substance abuse, please get help: <strong>SAMHSA 1-800-662-4357</strong>
           </p>
         </div>
+      </div>
+
+      {/* Cart Sidebar */}
+      <div className={`cart-sidebar ${isCartOpen ? 'open' : ''}`}>
+        <div className="cart-header">
+          <h2>Your Cart (FAKE)</h2>
+          <button className="close-cart" onClick={() => setIsCartOpen(false)}>×</button>
+        </div>
+
+        {cart.length === 0 ? (
+          <div className="empty-cart">
+            <p>Your cart is empty</p>
+            <p style={{ fontSize: '14px', marginTop: '10px' }}>(Nothing is actually for sale)</p>
+          </div>
+        ) : (
+          <>
+            <div className="cart-items">
+              {cart.map((item, index) => (
+                <div key={index} className="cart-item">
+                  <div className="cart-item-info">
+                    <h4>{item.name}</h4>
+                    <p className="cart-item-price">${item.price}</p>
+                  </div>
+                  <button className="remove-item" onClick={() => removeFromCart(index)}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="cart-total">
+              <h3>Total: ${getTotal()}</h3>
+              <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '14px', marginBottom: '20px' }}>
+                (This is all fake - no actual checkout)
+              </p>
+              <button className="glass-button checkout-button" onClick={handleCheckout}>
+                <span>Checkout (FAKE)</span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
 export default App
-
